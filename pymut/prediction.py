@@ -11,6 +11,8 @@ from sklearn import (
     cross_validation, ensemble, grid_search, learning_curve, linear_model,
     metrics, naive_bayes, pipeline, preprocessing)
 
+from imblearn.metrics import specificity_score
+
 
 ###############
 # Classifiers #
@@ -500,15 +502,15 @@ def evaluate_prediction(y, pred):
             1.0 - n_null/(n_null + len(y)),
             metrics.accuracy_score(y, pred),
             np.nan, np.nan, np.nan, np.nan,
-        ), index=('coverage', 'accuracy', 'precision', 'specificity', 'auc', 'mcc'))
+        ), index=('coverage', 'accuracy', 'specificity', 'sensitivity', 'auc', 'mcc'))
     return pd.Series((
         1.0 - n_null/(n_null + len(y)),
         metrics.accuracy_score(y, pred),
-        metrics.precision_score(y, pred),
+        specificity_score(y, pred),
         metrics.recall_score(y, pred),
         metrics.roc_auc_score(y, pred),
         metrics.matthews_corrcoef(y, pred),
-    ), index=('coverage', 'accuracy', 'precision', 'specificity', 'auc', 'mcc'))
+    ), index=('coverage', 'accuracy', 'specificity', 'sensitivity', 'auc', 'mcc'))
 
 
 ################################
