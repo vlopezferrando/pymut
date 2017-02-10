@@ -42,20 +42,12 @@ to see a full example of usage of PyMut. In the tutorial we show how to:
 * Predict the pathology of mutations using our newly trained predictor.
 
 
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/01.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/08.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/09.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/03.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/04.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/05.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/06.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/02.png">
-
-<img src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/07.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/01.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/08.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/09.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/03.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/04.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/05.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/06.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/02.png">
+<img width="200px" src="http://mmb.pcb.ub.es/pmut2017/static/img/pymut/07.png">
