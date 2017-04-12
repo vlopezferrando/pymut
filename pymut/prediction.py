@@ -51,7 +51,7 @@ CLASSIFIERS = {
             'min_samples_leaf': 10,
             'min_samples_split': 2,
             'n_estimators': 13,
-            'n_jobs': 1,
+            'n_jobs': 4,
         },
         'class': ensemble.RandomForestClassifier,
         'param_distributions': {
@@ -217,6 +217,15 @@ def _evaluate(X, y, estimator, train, test, percentiles=None, scores=None):
         #high_score = np.percentile(prob, 100 - percentile/2.0)
         low_score = np.percentile(prob[prob < 0.5], percentile)
         high_score = np.percentile(prob[prob > 0.5], 100 - percentile)
+        # if percentile == 100:
+        #     low_score = 0.5
+        #     high_score = 0.5
+        # elif percentile == 66:
+        #     low_score = 0.436
+        #     high_score = 0.664
+        # elif percentile == 33:
+        #     low_score = 0.285
+        #     high_score = 0.803
 
         # Filter predictions with higher confidence
         fil = np.logical_or(prob <= low_score, high_score <= prob)
@@ -297,6 +306,9 @@ def roc_curve(cv_results):
     sns.set_context("poster")
     figure = plt.figure()
 
+    #cv_results = cv_results.sort('percentile')
+    plots = []
+    labels = []
     for cv_i, ((classifier, folds, percentile), cv_group) in enumerate(cv_results.groupby(
             ['classifier', 'folds', 'percentile'])):
 
@@ -311,38 +323,124 @@ def roc_curve(cv_results):
 
         color = next(v['color'] for k, v in CLASSIFIERS.items()
                      if v['name'] == classifier)
+        #color = _red
         # QUICKFIX: get always different colors
-        color = sns.color_palette()[cv_i % len(sns.color_palette())]
+        #color = sns.color_palette()[cv_i % len(sns.color_palette())]
 
         if percentile == 100:
+            reliability = ''
             line_style = '-'
         elif percentile == 66:
             line_style = '--'
+            reliability = '85%'
         else:
             line_style = ':'
+            reliability = '90%'
 
-        plt.plot(
+        p, = plt.plot(
             mean_fpr,
             mean_tpr,
             lw=1.8,
             color=color,
-            ls=line_style,
-            label='%s. %d%%, %s. AUC = %0.3f, MCC = %0.3f' % (
-                classifier,
-                percentile,
-                folds,
+            ls=line_style)
+
+            #label='%s. %d%%, %s. AUC = %0.2f, MCC = %0.2f' % (
+        coverages = [
+            (cv.prob < cv.low_score).sum() + (cv.prob > cv.high_score).sum()
+            for cv in cv_group.itertuples()
+        ]
+        labels.append('PMut2017 Cross-validation. %0.1f%% coverage. AUC = %0.2f, MCC = %0.2f' % (
+                #classifier,
+                #percentile,
+                #folds,
+                sum(coverages)*100/len(coverages)/cv_group.n_test.mean(),
                 cv_group.auc.mean(),
                 cv_group.mcc.mean()))
 
-    plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6, 0.7), label='Luck')
+        # labels.append('PMut2017 %s cross-validation. AUC = %0.2f, MCC = %0.2f' % (
+        #     reliability,
+        #     cv_group.auc.mean(),
+        #     cv_group.mcc.mean()))
+        # labels.append('%s. Cross-Validation. AUC = %0.2f, MCC = %0.2f' % (
+        #         classifier,
+        #         cv_group.auc.mean(),
+        #         cv_group.mcc.mean()))
+        print('%0.2f %0.2f %0.2f %0.2f %0.2f %0.2f' % (
+            sum(coverages)*100/len(coverages)/cv_group.n_test.mean(),
+            cv_group.accuracy.mean(),
+            cv_group.sensitivity.mean(),
+            cv_group.specificity.mean(),
+            cv_group.auc.mean(),
+            cv_group.mcc.mean()))
+        plots.append(p)
+
+    plots = list(reversed(plots))
+    labels = list(reversed(labels))
+    p, = plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6, 0.7))
+    plots.append(p)
+    labels.append('Luck')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic')
-    plt.legend(loc='lower right', prop={'size': 16})
+    plt.xlabel('False Positive Rate', labelpad=20)
+    plt.ylabel('True Positive Rate', labelpad=20)
+    plt.title('Receiver operating characteristic', y=1.08)
+    plt.legend(plots, labels, loc='lower right', prop={'size': 16})
 
     return figure
+
+
+
+# def roc_curve(cv_results):
+#     sns.set_style("whitegrid")
+#     sns.set_context("poster")
+#     figure = plt.figure()
+
+#     for cv_i, ((classifier, folds, percentile), cv_group) in enumerate(cv_results.groupby(
+#             ['classifier', 'folds', 'percentile'])):
+
+#         mean_tpr = 0.0
+#         mean_fpr = np.linspace(0, 1, 100)
+
+#         for i, result in cv_group.iterrows():
+#             mean_tpr += sp.interp(mean_fpr, result.fpr, result.tpr)
+
+#         mean_tpr /= len(cv_group)
+#         mean_tpr[0], mean_tpr[-1] = 0.0, 1.0
+
+#         color = next(v['color'] for k, v in CLASSIFIERS.items()
+#                      if v['name'] == classifier)
+#         # QUICKFIX: get always different colors
+#         color = sns.color_palette()[cv_i % len(sns.color_palette())]
+
+#         if percentile == 100:
+#             line_style = '-'
+#         elif percentile == 66:
+#             line_style = '--'
+#         else:
+#             line_style = ':'
+
+#         plt.plot(
+#             mean_fpr,
+#             mean_tpr,
+#             lw=1.8,
+#             color=color,
+#             ls=line_style,
+#             label='%s. %d%%, %s. AUC = %0.3f, MCC = %0.3f' % (
+#                 classifier,
+#                 percentile,
+#                 folds,
+#                 cv_group.auc.mean(),
+#                 cv_group.mcc.mean()))
+
+#     plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6, 0.7), label='Luck')
+#     plt.xlim([0, 1])
+#     plt.ylim([0, 1])
+#     plt.xlabel('False Positive Rate')
+#     plt.ylabel('True Positive Rate')
+#     plt.title('Receiver operating characteristic')
+#     plt.legend(loc='lower right', prop={'size': 16})
+
+#     return figure
 
 
 ######################
@@ -501,16 +599,17 @@ def evaluate_prediction(y, pred):
         return pd.Series((
             1.0 - n_null/(n_null + len(y)),
             metrics.accuracy_score(y, pred),
-            np.nan, np.nan, np.nan, np.nan,
-        ), index=('coverage', 'accuracy', 'specificity', 'sensitivity', 'auc', 'mcc'))
+            np.nan, np.nan, np.nan, np.nan, np.nan,
+        ), index=('coverage', 'accuracy', 'precision', 'specificity', 'sensitivity', 'auc', 'mcc'))
     return pd.Series((
         1.0 - n_null/(n_null + len(y)),
         metrics.accuracy_score(y, pred),
+        metrics.precision_score(y, pred),
         specificity_score(y, pred),
         metrics.recall_score(y, pred),
         metrics.roc_auc_score(y, pred),
         metrics.matthews_corrcoef(y, pred),
-    ), index=('coverage', 'accuracy', 'specificity', 'sensitivity', 'auc', 'mcc'))
+    ), index=('coverage', 'accuracy', 'precision', 'specificity', 'sensitivity', 'auc', 'mcc'))
 
 
 ################################
