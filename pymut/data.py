@@ -40,6 +40,16 @@ def path_fasta(protein_id, db):
 
 
 def _get_file(name, protein_id, db, extension):
+    # Try to get file from subdirectory
+    try:
+        uniref_name = uniref100(protein_id)
+        if 'UniRef' in uniref_name:
+            subdir = uniref_name[:13]
+            return _return_fname_if_exists(os.path.join(
+                _DATA_DIR, '%s_%s' % (name, db), subdir,
+                '%s.%s.%s' % (uniref_name, db, extension)))
+    except:
+        pass
     return _return_fname_if_exists(os.path.join(
         _DATA_DIR, '%s_%s' % (name, db),
         '%s.%s.%s' % (uniref100(protein_id), db, extension)))
